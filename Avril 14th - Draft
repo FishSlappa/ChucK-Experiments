@@ -1,0 +1,263 @@
+Mandolin pianoleftv1 => Gain master =>  dac;
+Mandolin pianoleftv2 => master => dac;
+Mandolin pianoleftv3 => master => dac;
+Mandolin pianorightv1 => master => dac;
+Mandolin pianorightv2 => master => dac;
+
+0.1 => master.gain;
+
+80 => float BPM;
+60/BPM => float standard_len;
+standard_len*4::second => dur bar;
+standard_len*2::second => dur minim;
+(60/BPM)::second =>  dur crotchet;
+standard_len*0.5::second => dur quaver;
+standard_len*0.25::second => dur semiquaver;
+0 => int bool;
+
+    spork ~ lhpattern1();
+    spork ~ rhpattern1();
+    2*bar => now;
+    repeat(3)
+    {
+        spork ~ lhpattern1();
+        2*bar => now;
+    }
+    repeat(4)
+    {
+        spork ~ lhpattern2();
+        spork ~ rhpattern2();
+        2*bar => now;
+    }
+    repeat(2)
+    {
+        spork ~ lhpattern3();
+        spork ~ rhpattern3();
+        2*bar => now;
+    }
+    spork ~ lhpattern1();
+    spork ~ rhpattern1();
+    2*bar => now;
+    repeat(3)
+    {
+        spork ~ lhpattern1();
+        2*bar => now;
+    }
+    spork ~ lhpattern4();
+    spork ~ rhpattern4();
+    4*bar => now;
+    spork ~ lhpattern5();
+    spork ~ rhpattern5();
+    2*bar => now;
+    spork ~ rhpattern6();
+    4*bar => now;
+
+fun void lhpattern1()
+{
+    [44,53,56,60,48,56,60,63,49,56,61,63,46,56,61,60] @=> int lefthandpattern1[];
+    for(0 => int i; i < lefthandpattern1.cap(); i++)
+        {
+            1 => pianoleftv1.noteOn;
+            Std.mtof(lefthandpattern1[i]) => pianoleftv1.freq;
+            if (i%4 == 0)
+            {
+                0.45*Math.random2f(0.8,1.2) => pianoleftv1.gain;
+            }
+            else 0.3*Math.random2f(0.8,1.2) => pianoleftv1.gain;
+            quaver => now;
+        }
+}
+
+fun void lhpattern2()
+{
+    [44,56,53,51,39,51,53,51,44,56,53,51,39,49,51,49] @=> int lefthandpattern2[];
+    for(0 => int i; i < lefthandpattern2.cap(); i++)
+    {
+                1 => pianoleftv1.noteOn;
+                Std.mtof(lefthandpattern2[i]) => pianoleftv1.freq;
+                if (i%4 == 0)
+                {
+                    0.45*Math.random2f(0.8,1.2) => pianoleftv1.gain;
+                }
+                else 0.3*Math.random2f(0.8,1.2) => pianoleftv1.gain;
+                quaver => now;
+    }
+}
+
+fun void lhpattern3()
+{
+    [46,58,60,51,60,58,53,46,58,60,51,60,58,60] @=> int lefthandpattern3[];
+    for(0 => int i; i < lefthandpattern3.cap(); i++)
+    {
+        boolean();
+        if(bool == 1) 1 => pianoleftv1.noteOn;
+        else 1 => pianoleftv2.noteOn;
+        if(bool == 1)
+        {
+        Std.mtof(lefthandpattern3[i]) => pianoleftv1.freq;
+        }
+        else Std.mtof(lefthandpattern3[i]) => pianoleftv2.freq;
+        if(i==3) crotchet => now;
+        if(i==0||i==1||i==2||i==5||i==7||i==8||i==9||i==11||i==12) quaver => now;
+        if(i==4) semiquaver => now;
+        if(i==6||i==10||i==13) (quaver + semiquaver) => now;
+    }
+}
+
+fun void lhpattern4()
+{
+    [49,46,48,44,41,39,48,44] @=> int lefthandpattern4line1[];
+    [53,49,51,49,53,51,51,49] @=> int lefthandpattern4line2[];
+    [56,53,56,56,68,63,56,53] @=> int lefthandpattern4line3[];
+    for(0 => int i; i < lefthandpattern4line1.cap(); i++)
+    {
+        1 => pianoleftv1.noteOn;
+        1 => pianoleftv2.noteOn;
+        1 => pianoleftv3.noteOn;
+        Std.mtof(lefthandpattern4line1[i]) => pianoleftv1.freq;
+        Std.mtof(lefthandpattern4line2[i]) => pianoleftv2.freq;
+        Std.mtof(lefthandpattern4line3[i]) => pianoleftv3.freq;
+        if (i%2 == 0)
+        {
+            0.45*Math.random2f(0.8,1.2) => pianoleftv1.gain => pianoleftv2.gain => pianoleftv2.gain;
+        }
+        else 0.3*Math.random2f(0.8,1.2) => pianoleftv1.gain => pianoleftv2.gain => pianoleftv2.gain;
+        minim => now;
+    }
+}
+
+fun void lhpattern5()
+{
+    [41,53,56,58,48,56,58,63,49,56,60,65,46,56,61,63,60,56,54,53,48,56,60,63,53,56,61,65,44,56,68,63] @=> int lefthandpattern5[];
+    for(0 => int i; i < lefthandpattern5.cap(); i++)
+    {
+        1 => pianoleftv1.noteOn;
+        Std.mtof(lefthandpattern5[i]) => pianoleftv1.freq;
+        quaver => now;
+    }
+}
+
+fun void rhpattern1()
+{
+    [72,65,68,68,65,65,75,73,72,68] @=> int righthandpattern1[];
+    for(1 => int octaver; octaver <= 4; octaver++)
+    {
+        if(octaver==3)
+        {
+            spork ~ rhpattern1();
+            (semiquaver/4) => now;
+        }
+        for(0 => int i; i < righthandpattern1.cap(); i++)
+        {
+            Math.random2f(0.4,0.8) => pianorightv1.gain => pianorightv2.gain;
+            if(octaver>2)
+            {
+                1 => pianorightv2.noteOn;
+                Std.mtof(righthandpattern1[i]+12) => pianorightv2.freq;
+            }
+            else
+            {
+                1 => pianorightv1.noteOn;
+                Std.mtof(righthandpattern1[i]) => pianorightv1.freq;
+            }
+            if(i <= 2) crotchet => now;
+            if(i==2||i >= 5) quaver => now;
+            if(i==3) semiquaver => now;
+            if(i==4) (minim - semiquaver) => now;
+        }
+    }
+    0 => pianorightv1.noteOn => pianorightv2.noteOn;
+}
+
+fun void rhpattern2()
+{
+    [60,60,63,58,60,60,60,63,65,63] @=> int righthandpattern2[];
+    for(0 => int i; i < righthandpattern2.cap(); i++)
+    {
+        1 => pianorightv1.noteOn;
+        Std.mtof(righthandpattern2[i]) => pianorightv1.freq;
+        if(i==0||i==3||i==5||i==8) (crotchet + quaver) => now;
+        if(i==1||i==2||i==6||i==7) semiquaver => now;
+        if(i==4||i==9) quaver => now;
+    }
+}
+
+fun void rhpattern3()
+{
+    [61,65,67,68,72,67,65,67,68,72,67,65] @=> int righthandpattern3[];
+    for(0 => int i; i < righthandpattern3.cap(); i++)
+    {
+        boolean();
+        if(bool == 1) 1 => pianorightv1.noteOn;
+        else 1 => pianorightv2.noteOn;
+        if(bool == 1)
+        {
+            if(i>0) Std.mtof(righthandpattern3[i]+12) => pianorightv1.freq;
+            else Std.mtof(righthandpattern3[i]) => pianorightv1.freq;
+        }
+        else
+        {
+            if(i>0) Std.mtof(righthandpattern3[i]+12) => pianorightv2.freq;
+            else Std.mtof(righthandpattern3[i]) => pianorightv2.freq;
+        }
+        if(i<5||5<i<11) quaver => now;
+        if(i==5) crotchet+quaver => now;
+        if(i==11) crotchet => now; 
+    }
+}
+
+fun void rhpattern4()
+{
+    [72,70,72,72,75,77,75,72,75,72,70,68,72,75,77,65,72,68] @=> int righthandpattern4[];
+    for(0 => int i; i < righthandpattern4.cap(); i++)
+    {
+        1 => pianorightv1.noteOn;
+        Std.mtof(righthandpattern4[i]) => pianorightv1.freq;
+        if(i==7||i==16) minim => now;
+        if(i==0||i==2||i==9||i==11) crotchet+quaver+semiquaver => now;
+        if(i==8||i==17) crotchet => now;
+        if(i==6||i==15) quaver => now;
+        if(i==1||i==3||i==4||i==5||i==10||i==12||i==13||i==14) semiquaver => now;
+    }
+}
+
+fun void rhpattern5()
+{
+    [72,84,70,72,84,72,75,77,75,87,84,75] @=> int righthandpattern5[];
+    for(0 => int i; i < righthandpattern5.cap(); i++)
+    {
+        1 => pianorightv1.noteOn;
+        Std.mtof(righthandpattern5[i]) => pianorightv1.freq;
+        if(i==11)
+        {
+            1 => pianorightv2.noteOn;
+            Std.mtof(63) => pianorightv2.freq;
+        }
+        if(i==0||i==2||i==3||4<i<9) semiquaver => now;
+        if(i==1||i==4) crotchet + semiquaver => now;
+        if(1==13||i==11) crotchet => now;
+        if(i==9||i==10) quaver => now;
+        if(i==10) quaver + semiquaver => now;
+        1 => pianorightv2.noteOff;
+    }
+}
+
+fun void rhpattern6()
+{
+    semiquaver => now;
+    [80,77,70,77,72,75,77,65,72,75,75,75] @=> int righthandpattern6[];
+    for(0 => int i; i < righthandpattern6.cap(); i++)
+    {
+        1 => pianorightv1.noteOn;
+        Std.mtof(righthandpattern6[i]) => pianorightv1.freq;
+        if(i==0||i==2||i==7) quaver + semiquaver => now;
+        if(i==1||i==8) crotchet => now;
+        if(i==2||i==3||i==8) quaver => now;
+        if(i==4||i==5||i==6||i==8||i==9||i==10) semiquaver => now;
+    }
+}
+
+fun void boolean()
+{
+    Math.random2(0,1) => bool;
+}
